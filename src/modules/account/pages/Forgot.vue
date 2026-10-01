@@ -115,6 +115,7 @@
 <script>
 import ModalPagesHeader from "~/components/layout/ModalPagesHeader.vue";
 import { VueRecaptcha } from "vue-recaptcha";
+import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
 
 export default {
   name: "ForgotPassword",
@@ -148,7 +149,7 @@ export default {
   },
   beforeCreate: function () {
     if (localStorage.getItem("token")) {
-      this.$router.push("/trade/QOGE-USDT");
+      window.location.replace(`/account${DEFAULT_TRADE_PATH}`);
     }
   },
   methods: {

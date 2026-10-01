@@ -1,6 +1,7 @@
 import { app } from "../main";
 import errorManager from "~/helpers/errorHundle";
 import InfoModal from "~/components/modals/InfoModal.vue";
+import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
 
 export default {
   data() {
@@ -51,9 +52,12 @@ export default {
       if (userSelectedInterface === null) {
         this.$router.push("/interface-select");
       } else if (redirectFullpath) {
-        window.location.replace("account" + redirectFullpath);
+        const path = redirectFullpath.startsWith("/")
+          ? `/account${redirectFullpath}`
+          : `/account/${redirectFullpath}`;
+        window.location.replace(path);
       } else {
-        window.location.replace("account/trade/QOGE-USDT");
+        window.location.replace(`/account${DEFAULT_TRADE_PATH}`);
       }
     },
     enterGoogleCode(captcha) {

@@ -229,6 +229,7 @@
 import { VueRecaptcha } from "vue-recaptcha";
 import ModalPagesHeader from "~/components/layout/ModalPagesHeader.vue";
 import loginMixin from "~/mixins/login";
+import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
 
 export default {
   name: "LoginPage",
@@ -261,7 +262,7 @@ export default {
   },
   beforeCreate() {
     if (localStorage.getItem("token")) {
-      this.$router.push("/trade/QOGE-USDT");
+      window.location.replace(`/account${DEFAULT_TRADE_PATH}`);
     }
     localStorage.setItem("showDepositNoticeModal", "1");
     if (localStorage.getItem("justactivate") === "true") {
