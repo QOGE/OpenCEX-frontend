@@ -225,6 +225,7 @@ import FastBuySellHistoryList from "~/modules/exchange/components/FastBuySellHis
 import Select3 from "~/components/ui/Select3.vue";
 import InfoModal from "~/components/modals/InfoModal.vue";
 import { mapActions } from "vuex";
+import { DEFAULT_WALLET_COIN } from "~/utilities/consts";
 
 export default {
   name: "QuickBuySell",
@@ -258,7 +259,7 @@ export default {
       exchangeDisabled: false,
       receiveAmount: 0,
       balanceSum: 0,
-      cur1: "BTC",
+      cur1: DEFAULT_WALLET_COIN,
       cur2: "USDT",
       give: null,
       get: null,
