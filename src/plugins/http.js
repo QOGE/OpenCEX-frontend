@@ -10,7 +10,7 @@ export default (app) => {
 
   const router = app.config.globalProperties.$router;
 
-  const noAuthRequireRoutes = ["/account/trade/BTC-USDT"];
+  const noAuthRequireRoutes = ["/account/trade/QOGE-USDT"];
 
   router.options.routes.forEach((item) => {
     if (!item.meta || !item.meta.authRequired) {

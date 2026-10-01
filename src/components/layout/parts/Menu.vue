@@ -114,7 +114,7 @@ export default {
         {
           key: "buysell",
           iconClass: "line-chart",
-          path: "/trade/BTC-USDT",
+          path: "/trade/QOGE-USDT",
           rout: true,
         },
         {

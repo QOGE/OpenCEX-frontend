@@ -1,4 +1,5 @@
 import lazyLoadView from "~/utilities/lazyLoad";
+import { DEFAULT_WALLET_COIN } from "~/utilities/consts";
 
 export default [
   {
@@ -20,7 +21,7 @@ export default [
   {
     path: "/wallet/deposit",
     name: "wallet-deposit-root",
-    redirect: "/wallet/deposit/BTC",
+    redirect: `/wallet/deposit/${DEFAULT_WALLET_COIN}`,
     meta: {
       authRequired: true,
     },
@@ -36,7 +37,7 @@ export default [
   {
     path: "/wallet/withdrawal",
     name: "wallet-withdrawal-root",
-    redirect: "/wallet/withdrawal/BTC",
+    redirect: `/wallet/withdrawal/${DEFAULT_WALLET_COIN}`,
     meta: {
       authRequired: true,
     },
@@ -52,7 +53,7 @@ export default [
   {
     path: "/wallet/history",
     name: "wallet-history-root",
-    redirect: "/wallet/history/BTC",
+    redirect: `/wallet/history/${DEFAULT_WALLET_COIN}`,
     meta: {
       authRequired: true,
     },

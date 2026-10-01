@@ -82,7 +82,7 @@ export default {
       if (this.prevRoute === "/settings") {
         this.$router.push("/settings");
       } else {
-        this.$router.push("/trade/BTC-USDT");
+        this.$router.push("/trade/QOGE-USDT");
       }
     },
     setDefaultView(type) {

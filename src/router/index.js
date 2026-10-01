@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import store from "~/store";
 import lazyLoadView from "~/utilities/lazyLoad";
+import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
 
 export const beforeEnterUnAuthorizedRoute = (routeTo, routeFrom, next) => {
   function redirectToLogin() {
@@ -73,7 +74,7 @@ let routes = [
   {
     path: "/",
     name: "account-root",
-    redirect: "/trade/BTC-USDT",
+    redirect: DEFAULT_TRADE_PATH,
   },
   {
     path: "/404",

@@ -120,7 +120,7 @@
             <div class="footer-links-title">
               {{ $t("common.products") }}
             </div>
-            <router-link to="/trade/BTC-USDT">
+            <router-link to="/trade/QOGE-USDT">
               {{ $t("common.buysell") }}
             </router-link>
             <router-link to="/quick-swap">

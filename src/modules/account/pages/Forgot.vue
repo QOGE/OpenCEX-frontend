@@ -148,7 +148,7 @@ export default {
   },
   beforeCreate: function () {
     if (localStorage.getItem("token")) {
-      this.$router.push("/trade/BTC-USDT");
+      this.$router.push("/trade/QOGE-USDT");
     }
   },
   methods: {

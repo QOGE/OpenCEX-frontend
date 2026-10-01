@@ -71,6 +71,7 @@
 <script>
 import { mapGetters } from "vuex";
 import { Init } from "~/utilities/manager";
+import { DEFAULT_TRADE_PAIR } from "~/utilities/consts";
 import getFormattedDate from "~/mixins/getFormattedDate";
 import getFixedDecimal from "~/mixins/getFixedDecimal";
 import mainPageDataMocks from "~/mixins/mainPageDataInitMocks";
@@ -129,13 +130,13 @@ export default {
   props: {
     pairprop: {
       type: String,
-      default: "BTC-USDT",
+      default: DEFAULT_TRADE_PAIR,
       useDefaultForNull: true,
     },
   },
   data() {
     return {
-      currentPair: ["BTC", "USDT"],
+      currentPair: DEFAULT_TRADE_PAIR.split("-"),
       showbluewallet: true,
       pagination: {
         open_orders: {
@@ -237,7 +238,14 @@ export default {
       }
 
       if (!to.includes(this.pairprop)) {
-        this.$router.replace("/404");
+        if (
+          this.pairprop !== DEFAULT_TRADE_PAIR &&
+          to.includes(DEFAULT_TRADE_PAIR)
+        ) {
+          this.$router.replace(`/trade/${DEFAULT_TRADE_PAIR}`);
+        } else {
+          this.$router.replace("/404");
+        }
       }
     },
     wsMessage(message) {

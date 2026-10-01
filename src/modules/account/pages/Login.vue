@@ -261,7 +261,7 @@ export default {
   },
   beforeCreate() {
     if (localStorage.getItem("token")) {
-      this.$router.push("/trade/BTC-USDT");
+      this.$router.push("/trade/QOGE-USDT");
     }
     localStorage.setItem("showDepositNoticeModal", "1");
     if (localStorage.getItem("justactivate") === "true") {

@@ -53,7 +53,7 @@ export default {
       } else if (redirectFullpath) {
         window.location.replace("account" + redirectFullpath);
       } else {
-        window.location.replace("account/trade/BTC-USDT");
+        window.location.replace("account/trade/QOGE-USDT");
       }
     },
     enterGoogleCode(captcha) {

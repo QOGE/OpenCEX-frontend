@@ -1,4 +1,5 @@
 import lazyLoadView from "~/utilities/lazyLoad";
+import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
 
 export default [
   {
@@ -10,6 +11,6 @@ export default [
   {
     path: "/trade",
     name: "trade",
-    redirect: "/trade/BTC-USDT",
+    redirect: DEFAULT_TRADE_PATH,
   },
 ];
