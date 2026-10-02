@@ -1,68 +1,67 @@
 <template>
-  <div v-if="showPage">
-    <div class="flex flex-wrap xl:-mt-2">
-      <div class="md:w-3/12 order-tables">
-        <v-card class="rounded-[3px] overflow-hidden mt-4">
-          <SellOrders
-            :decimals="coins[currentBaseCurrency].decimals"
-            :base-currency="currentBaseCurrency"
-            :quote-currency="currentQuoteCurrency"
-            :stack-precision="pairPrecisions"
-            :precision="savedPrecision"
-            @change-precision="changePrecision"
-            @sellrowclick="setLimitOrder('buy', $event.quantity, $event.price)"
-            @buyrowclick="setLimitOrder('sell', $event.quantity, $event.price)"
-          ></SellOrders>
+  <div v-if="showPage" class="trade-terminal">
+    <div class="trade-terminal__book order-tables">
+      <v-card class="trade-panel">
+        <SellOrders
+          :decimals="coins[currentBaseCurrency].decimals"
+          :base-currency="currentBaseCurrency"
+          :quote-currency="currentQuoteCurrency"
+          :stack-precision="pairPrecisions"
+          :precision="savedPrecision"
+          @change-precision="changePrecision"
+          @sellrowclick="setLimitOrder('buy', $event.quantity, $event.price)"
+          @buyrowclick="setLimitOrder('sell', $event.quantity, $event.price)"
+        ></SellOrders>
+      </v-card>
+    </div>
+    <div class="trade-terminal__chart graphic-order">
+      <div class="graphic-order-wrapper">
+        <TradeGraphic
+          :precision="Math.min(savedPrecision * 1, 0.01) || 0.01"
+        />
+      </div>
+    </div>
+    <div class="trade-terminal__side data-order">
+      <div class="currency-list">
+        <v-card class="trade-panel">
+          <CurrencyList
+            :default-pair="pairprop"
+            :current-pair="currentPair"
+            @set-cur-pair="setCurrentPair"
+          ></CurrencyList>
         </v-card>
       </div>
-      <div class="md:w-6/12 graphic-order xl:px-4">
-        <div class="graphic-order-wrapper">
-          <TradeGraphic
-            :precision="Math.min(savedPrecision * 1, 0.01) || 0.01"
-          />
-        </div>
-        <div>
-          <v-card>
-            <TradeMenus
-              class="trade-menus"
-              :base-currency="currentBaseCurrency"
-              :quote-currency="currentQuoteCurrency"
-              @error="showErrorMessage"
-            />
-          </v-card>
-        </div>
-      </div>
-      <div class="md:w-3/12 data-order xl:pb-0 pb-4">
-        <div class="mt-4 currency-list">
-          <v-card>
-            <CurrencyList
-              :default-pair="pairprop"
-              :current-pair="currentPair"
-              @set-cur-pair="setCurrentPair"
-            ></CurrencyList>
-          </v-card>
-        </div>
-        <div class="wallet-list">
-          <div :class="{ blocked: !isAuthorized }">
-            <div v-if="!isAuthorized" class="wallet-list--tooltip-layer"></div>
-            <WalletList :coins="coins" @tab-chosen="bluewallet"></WalletList>
-            <div v-if="showbluewallet" class="wallet clear">
-              <router-link :to="'/wallet'" class="wallet__link">
-                <img
-                  src="/public/img/rect-orange.svg"
-                  alt="rect"
-                  class="wallet__link-image wallet-sell inline-block"
-                />
-                {{ $t("common.wallet") }}
-              </router-link>
-            </div>
+      <div class="wallet-list">
+        <div :class="{ blocked: !isAuthorized }">
+          <div v-if="!isAuthorized" class="wallet-list--tooltip-layer"></div>
+          <WalletList :coins="coins" @tab-chosen="bluewallet"></WalletList>
+          <div v-if="showbluewallet" class="wallet clear">
+            <router-link :to="'/wallet'" class="wallet__link">
+              <img
+                src="/public/img/rect-orange.svg"
+                alt="rect"
+                class="wallet__link-image wallet-sell inline-block"
+              />
+              {{ $t("common.wallet") }}
+            </router-link>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="xl:grid lg:grid-cols-2 lg:gap-4">
+    <div class="trade-terminal__form">
+      <v-card class="trade-panel">
+        <TradeMenus
+          class="trade-menus"
+          :base-currency="currentBaseCurrency"
+          :quote-currency="currentQuoteCurrency"
+          @error="showErrorMessage"
+        />
+      </v-card>
+    </div>
+    <div class="trade-terminal__orders">
       <UserOrders @error="showErrorMessage" @pull-orders="getOrders" />
+    </div>
+    <div class="trade-terminal__trades">
       <Recent />
     </div>
   </div>
@@ -693,17 +692,126 @@ export default {
 <style lang="scss" scoped>
 @import "~/assets/css/variables";
 
+.trade-terminal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: calc(100vh - 72px);
+}
+
+.trade-terminal__book,
+.trade-terminal__chart,
+.trade-terminal__side,
+.trade-terminal__form,
+.trade-terminal__orders,
+.trade-terminal__trades {
+  min-width: 0;
+}
+
+.trade-terminal__chart {
+  order: -1;
+  min-height: 420px;
+}
+
+.trade-panel {
+  height: 100%;
+  overflow: hidden;
+}
+
 .graphic-order-wrapper {
-  height: 457px;
+  height: 100%;
+  min-height: 420px;
+}
+
+.trade-menus {
+  margin-top: 0;
+}
+
+@media (min-width: 1100px) {
+  .trade-terminal {
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr) 300px;
+    grid-template-rows: minmax(560px, 1fr) auto minmax(220px, 30vh);
+    grid-template-areas:
+      "book chart side"
+      "book form side"
+      "orders orders trades";
+    gap: 8px;
+    min-height: calc(100vh - 64px);
+  }
+
+  .trade-terminal__book {
+    grid-area: book;
+    order: 0;
+  }
+  .trade-terminal__chart {
+    grid-area: chart;
+    order: 0;
+    min-height: 0;
+  }
+  .trade-terminal__side {
+    grid-area: side;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+  }
+  .trade-terminal__form {
+    grid-area: form;
+  }
+  .trade-terminal__orders {
+    grid-area: orders;
+    min-height: 0;
+  }
+  .trade-terminal__trades {
+    grid-area: trades;
+    min-height: 0;
+  }
+
+  .trade-terminal__side .currency-list {
+    flex: 1.15;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .trade-terminal__side .wallet-list {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .graphic-order-wrapper {
+    min-height: 560px;
+  }
+
+  .trade-terminal__orders :deep(.user-orders),
+  .trade-terminal__trades :deep(.trades) {
+    height: 100%;
+    overflow: auto;
+  }
 }
 
 .order-tables {
   position: relative;
-  top: -1px;
+  top: 0;
+  height: 100%;
 }
 
-.trade-menus {
-  margin-top: 15px;
+:deep(.graphic) {
+  height: 100% !important;
+  min-height: 420px;
+  margin-top: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+:deep(.graphic iframe) {
+  height: 100% !important;
+}
+
+@media (min-width: 1100px) {
+  :deep(.graphic) {
+    min-height: 560px;
+  }
 }
 .wallet-list--tooltip-layer {
   z-index: 2;

@@ -11,10 +11,16 @@
       "
     >
       <HeaderComponent v-if="!simpleLayout" />
-      <div class="content" :class="{ 'content--simple': simpleLayout }">
+      <div
+        class="content"
+        :class="{
+          'content--simple': simpleLayout,
+          'content--trade': isTradeLayout,
+        }"
+      >
         <slot />
       </div>
-      <FooterComponent v-if="!simpleLayout" />
+      <FooterComponent v-if="!simpleLayout && !isTradeLayout" />
       <notification-root />
       <modal-root />
       <!-- eslint-disable-next-line vue/no-v-html -->
@@ -104,9 +110,15 @@ export default {
     borderLocal() {
       return localConfig?.themes?.[this.currentTheme]?.border_color || "#CCC";
     },
+    isTradeLayout() {
+      return this.$route.name === "trade-pair" || this.$route.name === "trade";
+    },
   },
   watch: {
-    "$route.path": "checkLayout",
+    "$route.path": {
+      immediate: true,
+      handler: "checkLayout",
+    },
     theme: {
       immediate: true,
       handler() {
@@ -232,6 +244,10 @@ input[type="password"],
 #header,
 .support__title-bar {
   background: v-bind(mainColorLocal) !important;
+}
+.theme-dark #header {
+  background: v-bind(mainBackgroundLocal) !important;
+  border-bottom: 1px solid v-bind(borderLocal) !important;
 }
 .footer-links-column a,
 .support__content-item a,
@@ -413,7 +429,7 @@ th.walletTable__header,
 
 html.theme-dark,
 html.theme-dark body {
-  background-color: #111111;
+  background-color: #07080c;
 }
 
 .theme-dark .card,
@@ -436,8 +452,11 @@ html.theme-dark body {
 .theme-dark .modal-window,
 .theme-dark .update-order-modal,
 .theme-dark .support__content-card,
-.theme-dark .support__nav-card {
-  border-radius: 3px;
+.theme-dark .support__nav-card,
+.theme-dark .trade-panel {
+  border-radius: 8px;
+  border: 1px solid v-bind(borderLocal);
+  box-shadow: none !important;
 }
 
 .theme-dark .card,
@@ -447,7 +466,48 @@ html.theme-dark body {
 .theme-dark .trades,
 .theme-dark .currency-list,
 .theme-dark .wallet-list,
-.theme-dark .tab-block {
+.theme-dark .tab-block,
+.theme-dark .trade-panel {
   overflow: hidden;
+}
+
+.theme-dark #header,
+.header--market {
+  min-height: 56px;
+}
+.theme-dark .header__logo,
+.header--market .header__logo {
+  min-height: 56px;
+}
+.theme-dark .header__ether-img,
+.header--market .header__ether-img {
+  width: 40px;
+  height: 36px;
+}
+.theme-dark .header__ether-img img,
+.header--market .header__ether-img img {
+  height: 32px !important;
+  margin-right: 10px;
+}
+.theme-dark .header__ether,
+.header--market .header__ether {
+  padding: 0 1rem;
+}
+.theme-dark .header__etc,
+.header--market .header__etc {
+  padding-left: 1rem;
+}
+
+.content--trade {
+  padding: 72px 8px 8px !important;
+  max-width: none;
+  width: 100%;
+}
+.theme-dark .content--trade {
+  padding-top: 64px !important;
+}
+
+.theme-dark .graphic:hover {
+  box-shadow: none;
 }
 </style>

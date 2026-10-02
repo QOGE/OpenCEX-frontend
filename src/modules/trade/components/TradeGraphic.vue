@@ -109,7 +109,8 @@ export default {
           datafeed: this.datafeed,
           library_path: "/public/TV/charting_library/",
           autosize: true,
-          toolbar_bg: "#f6f6f8",
+          theme: this.theme === "dark" ? "Dark" : "Light",
+          toolbar_bg: this.blockColorLocal,
           disabled_features: [
             "left_toolbar",
             "header_symbol_search",
@@ -156,11 +157,17 @@ export default {
           backgroundGradientStartColor: this.blockColorLocal,
           backgroundGradientEndColor: this.blockColorLocal,
           vertGridProperties: {
-            color: "rgba(42, 46, 57, 0.06)",
+            color:
+              this.theme === "dark"
+                ? "rgba(255, 255, 255, 0.05)"
+                : "rgba(42, 46, 57, 0.06)",
             style: 0,
           },
           horzGridProperties: {
-            color: "rgba(42, 46, 57, 0.06)",
+            color:
+              this.theme === "dark"
+                ? "rgba(255, 255, 255, 0.05)"
+                : "rgba(42, 46, 57, 0.06)",
             style: 0,
           },
           crossHairProperties: {
@@ -197,8 +204,11 @@ export default {
           },
         },
         scalesProperties: {
-          backgroundColor: "#ffffff",
-          lineColor: "rgba(42, 46, 57, 0.14)",
+          backgroundColor: this.blockColorLocal,
+          lineColor:
+            this.theme === "dark"
+              ? "rgba(255, 255, 255, 0.08)"
+              : "rgba(42, 46, 57, 0.14)",
           textColor: this.mainTextLocal,
           fontSize: 12,
           scaleSeriesOnly: false,
