@@ -16,9 +16,7 @@
     </div>
     <div class="trade-terminal__chart graphic-order">
       <div class="graphic-order-wrapper">
-        <TradeGraphic
-          :precision="Math.min(savedPrecision * 1, 0.01) || 0.01"
-        />
+        <TradeGraphic :precision="Math.min(savedPrecision * 1, 0.01) || 0.01" />
       </div>
     </div>
     <div class="trade-terminal__side data-order">
