@@ -1,5 +1,8 @@
 <template>
-  <div :style="mainTextLocal ? `color: ${mainTextLocal}` : {}">
+  <div
+    :class="{ 'theme-dark': theme === 'dark' }"
+    :style="mainTextLocal ? `color: ${mainTextLocal}` : {}"
+  >
     <div
       :style="
         mainBackgroundLocal
@@ -104,6 +107,12 @@ export default {
   },
   watch: {
     "$route.path": "checkLayout",
+    theme: {
+      immediate: true,
+      handler() {
+        this.applyThemeClass();
+      },
+    },
   },
   beforeUnmount() {
     clearInterval(this.interval);
@@ -115,9 +124,22 @@ export default {
     } else {
       this.$store.dispatch("core/changeTheme", "light");
     }
+    this.applyThemeClass();
   },
 
   methods: {
+    applyThemeClass() {
+      if (typeof document === "undefined") return;
+      const dark = this.theme === "dark";
+      document.documentElement.classList.toggle("theme-dark", dark);
+      if (this.mainBackgroundLocal) {
+        document.documentElement.style.setProperty(
+          "--theme-background-color",
+          this.mainBackgroundLocal
+        );
+      }
+    },
+
     startUpdatingCoinsData() {
       if (this.updatingCoinsData) return;
       this.updatingCoinsData = true;
@@ -387,5 +409,45 @@ th.walletTable__header,
 .show-password-icon path {
   background: v-bind(mainColorLocal) !important;
   fill: v-bind(mainTextLocal) !important;
+}
+
+html.theme-dark,
+html.theme-dark body {
+  background-color: #111111;
+}
+
+.theme-dark .card,
+.theme-dark .graphic-order-wrapper,
+.theme-dark .graphic,
+.theme-dark .trade-menus,
+.theme-dark .user-orders,
+.theme-dark .trades,
+.theme-dark .currency-list,
+.theme-dark .wallet-list,
+.theme-dark .tab-block,
+.theme-dark .wallet,
+.theme-dark .otc,
+.theme-dark .plate,
+.theme-dark .limit-list,
+.theme-dark .table-list,
+.theme-dark .exchange,
+.theme-dark .historylist,
+.theme-dark .balancelist,
+.theme-dark .modal-window,
+.theme-dark .update-order-modal,
+.theme-dark .support__content-card,
+.theme-dark .support__nav-card {
+  border-radius: 3px;
+}
+
+.theme-dark .card,
+.theme-dark .graphic-order-wrapper,
+.theme-dark .graphic,
+.theme-dark .user-orders,
+.theme-dark .trades,
+.theme-dark .currency-list,
+.theme-dark .wallet-list,
+.theme-dark .tab-block {
+  overflow: hidden;
 }
 </style>
