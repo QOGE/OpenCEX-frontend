@@ -4,8 +4,9 @@
       <div class="error__header">
         <router-link :to="homeLink">
           <img
-            width="200"
+            width="220"
             class="error__logo"
+            alt="Qogecoin"
             :src="
               localConfig.logo ? localConfig.logo : '/public/img/logo-white.png'
             "

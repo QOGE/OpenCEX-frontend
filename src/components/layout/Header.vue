@@ -14,6 +14,8 @@
       <a class="header__logo-link" href="/">
         <img
           width="135"
+          height="37"
+          alt="Qogecoin"
           :src="
             localConfig.logo ? localConfig.logo : '/public/img/logo-white.png'
           "
@@ -410,6 +412,8 @@ export default {
     min-height: 70px;
 
     & img {
+      height: 36px;
+      width: auto;
       max-height: 48px;
     }
 
