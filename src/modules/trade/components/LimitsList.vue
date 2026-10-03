@@ -343,7 +343,7 @@ export default {
   }
   &__percent-button {
     background-color: #f1f3f5;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
@@ -354,6 +354,11 @@ export default {
     @media screen and (max-width: 1440px) and (min-width: 1281px) {
       padding: 2px;
     }
+    html.theme-dark & {
+      background-color: #12151e;
+      border-color: #222838;
+      color: #c5c9d6;
+    }
   }
   &__submit-button {
     cursor: pointer;
@@ -362,6 +367,7 @@ export default {
     border-radius: 3px;
     height: 28px;
     width: 140px;
+    margin-left: auto;
     font-size: 13px;
     font-weight: 700;
     display: flex;
