@@ -82,13 +82,6 @@
     <button
       class="limit-list__submit-button mt-4"
       :class="`limit-list__submit-button_${color}`"
-      :style="
-        mainColor
-          ? color === 'green'
-            ? `background: ${mainColor} !important`
-            : `background: ${secondolor} !important`
-          : {}
-      "
       type="submit"
       :disabled="disableOperations"
     >
@@ -161,7 +154,7 @@ export default {
     },
 
     color() {
-      return this.operation === "buy" ? "green" : "orange";
+      return this.operation === "buy" ? "green" : "red";
     },
 
     fee() {
@@ -366,17 +359,23 @@ export default {
     cursor: pointer;
     border: none;
     color: #ffffff;
-    border-radius: 5px;
-    height: 36px;
-    width: 100%;
+    border-radius: 3px;
+    height: 28px;
+    width: 140px;
+    font-size: 13px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    &_orange {
-      background-color: #4f5557;
+    &_red {
+      background-color: rgb(255, 93, 85);
     }
     &_green {
-      background-color: var(--theme-primary-color);
+      background-color: rgb(114, 187, 83);
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 }
