@@ -1,5 +1,18 @@
 <template>
-  <div id="graphic" ref="graphic" class="graphic"></div>
+  <div class="trade-graphic">
+    <div id="graphic" ref="graphic" class="graphic"></div>
+    <div class="pending-order-overlay" aria-hidden="true">
+      <div
+        v-for="line in overlayLines"
+        :key="line.id"
+        class="pending-order-line"
+        :class="line.side"
+        :style="line.style"
+      >
+        <span class="pending-order-line__label">{{ line.label }}</span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -11,7 +24,6 @@ import localConfig from "~/local_config";
 
 const BUY_LINE_COLOR = "#72bb53";
 const SELL_LINE_COLOR = "#ff5d55";
-const DOTTED_LINE_STYLE = 1;
 const PENDING_ORDERS_LIMIT = 200;
 const PENDING_ORDERS_DEBOUNCE_MS = 300;
 const PENDING_ORDERS_POLL_MS = 15000;
@@ -39,11 +51,12 @@ export default {
       chartReady: false,
       chartDataReady: false,
       pendingOrders: [],
-      orderLines: {},
+      overlayMetrics: null,
       pendingOrdersRequestId: 0,
       pendingOrdersTimer: null,
       pendingOrdersPoll: null,
       chartDataReadyTimer: null,
+      overlaySyncTimer: null,
     };
   },
   computed: {
@@ -81,6 +94,40 @@ export default {
             `${order.id}:${order.price}:${order.quantity_left}:${order.state}`
         )
         .join("|");
+    },
+    overlayLines() {
+      const metrics = this.overlayMetrics;
+      if (
+        !metrics ||
+        !metrics.height ||
+        metrics.priceTo === metrics.priceFrom
+      ) {
+        return [];
+      }
+      const span = metrics.priceTo - metrics.priceFrom;
+      if (!span) return [];
+      return this.pendingOrders
+        .map((order) => {
+          const price = Number(order.price);
+          const y = ((metrics.priceTo - price) / span) * metrics.height;
+          if (y < -8 || y > metrics.height + 8) return null;
+          const isBuy = order.operation === 0;
+          return {
+            id: String(order.id),
+            side: isBuy ? "buy" : "sell",
+            label: `${isBuy ? "Buy" : "Sell"} ${this.formatOrderQuantity(
+              order
+            )}`,
+            style: {
+              top: `${metrics.top + y}px`,
+              left: `${metrics.left}px`,
+              width: `${metrics.width}px`,
+              borderTopColor: isBuy ? BUY_LINE_COLOR : SELL_LINE_COLOR,
+              color: isBuy ? BUY_LINE_COLOR : SELL_LINE_COLOR,
+            },
+          };
+        })
+        .filter(Boolean);
     },
     blockColorLocal() {
       return localConfig?.themes?.[this.currentTheme]?.block_color || "#FFF";
@@ -159,7 +206,7 @@ export default {
       clearTimeout(this.chartDataReadyTimer);
       this.chartDataReadyTimer = null;
     }
-    this.clearOrderLines(false);
+    this.stopOverlaySync();
     if (this.datafeed) this.datafeed.unsubscribeBars();
     if (this.tvWidget) {
       try {
@@ -195,7 +242,8 @@ export default {
         clearTimeout(this.chartDataReadyTimer);
         this.chartDataReadyTimer = null;
       }
-      this.clearOrderLines(false);
+      this.stopOverlaySync();
+      this.overlayMetrics = null;
       if (this.tvWidget) {
         try {
           this.tvWidget.remove();
@@ -255,7 +303,7 @@ export default {
         const markDataReady = () => {
           if (this.tvWidget !== tvWidget) return;
           this.chartDataReady = true;
-          this.clearOrderLines(false);
+          this.startOverlaySync();
           this.loadPendingOrders();
         };
         try {
@@ -310,11 +358,11 @@ export default {
     async loadPendingOrders() {
       if (!this.isAuthorized || !this.pairCode) {
         this.pendingOrders = [];
-        this.syncOrderLines();
+        this.updateOverlayMetrics();
         return;
       }
       this.pendingOrders = this.mergePendingOrders([]);
-      this.syncOrderLines();
+      this.updateOverlayMetrics();
       const requestId = ++this.pendingOrdersRequestId;
       const pair = this.pairCode;
       try {
@@ -331,12 +379,12 @@ export default {
         }
         const results = Array.isArray(body) ? body : body?.results || [];
         this.pendingOrders = this.mergePendingOrders(results);
-        this.syncOrderLines();
+        this.updateOverlayMetrics();
       } catch (e) {
         if (requestId !== this.pendingOrdersRequestId) return;
         console.log(e);
         this.pendingOrders = this.mergePendingOrders([]);
-        this.syncOrderLines();
+        this.updateOverlayMetrics();
       }
     },
     getChart() {
@@ -350,23 +398,6 @@ export default {
         return null;
       }
     },
-    shapePoint(price) {
-      const chart = this.getChart();
-      let time;
-      try {
-        const range = chart && chart.getVisibleRange();
-        if (range && range.to) time = range.to;
-      } catch (e) {
-        console.log(e);
-      }
-      return time ? { time, price } : { price };
-    },
-    orderLineKey(order) {
-      return String(order.id);
-    },
-    orderLineFingerprint(order) {
-      return `${order.price}:${order.quantity_left}:${order.operation}`;
-    },
     formatOrderQuantity(order) {
       const value =
         order.quantity_left != null ? order.quantity_left : order.quantity;
@@ -376,96 +407,89 @@ export default {
       }
       return String(asNumber);
     },
-    removeLineEntry(entry) {
-      if (!entry) return;
+    startOverlaySync() {
+      this.stopOverlaySync();
+      this.updateOverlayMetrics();
+      this.overlaySyncTimer = setInterval(() => {
+        this.updateOverlayMetrics();
+      }, 400);
+    },
+    stopOverlaySync() {
+      if (this.overlaySyncTimer) {
+        clearInterval(this.overlaySyncTimer);
+        this.overlaySyncTimer = null;
+      }
+    },
+    getPriceRange() {
+      const chart = this.getChart();
+      if (!chart) return null;
       try {
-        if (entry.kind === "orderLine" && entry.api && entry.api.remove) {
-          entry.api.remove();
-        } else if (entry.kind === "shape" && entry.api != null) {
-          const chart = this.getChart();
-          if (chart) chart.removeEntity(entry.api);
+        const panes = chart.getPanes && chart.getPanes();
+        const pane = panes && panes[0];
+        const scale = pane && pane.getMainSourcePriceScale();
+        const range = scale && scale.getVisiblePriceRange();
+        if (range && range.from != null && range.to != null) {
+          return range;
         }
       } catch (e) {
         console.log(e);
       }
-    },
-    clearOrderLines(removeFromChart) {
-      if (removeFromChart) {
-        Object.keys(this.orderLines).forEach((key) => {
-          this.removeLineEntry(this.orderLines[key]);
-        });
-      }
-      this.orderLines = {};
-    },
-    drawOrderLine(order) {
-      const chart = this.getChart();
-      if (!chart) return null;
-      const price = Number(order.price);
-      const isBuy = order.operation === 0;
-      const color = isBuy ? BUY_LINE_COLOR : SELL_LINE_COLOR;
-      const quantity = this.formatOrderQuantity(order);
-      const text = isBuy ? "Buy" : "Sell";
       try {
-        const id = chart.createShape(this.shapePoint(price), {
-          shape: "horizontal_line",
-          text: `${text} ${quantity}`,
-          lock: true,
-          disableSelection: true,
-          disableSave: true,
-          disableUndo: true,
-          showInObjectsTree: false,
-          overrides: {
-            linecolor: color,
-            linestyle: DOTTED_LINE_STYLE,
-            linewidth: 1,
-            showPrice: true,
-            showLabel: true,
-            textcolor: color,
-            fontsize: 11,
-            horzLabelsAlign: "right",
-            vertLabelsAlign: "bottom",
-          },
-        });
-        if (id == null) return null;
-        return {
-          kind: "shape",
-          api: id,
-          fingerprint: this.orderLineFingerprint(order),
-        };
+        return chart.getVisiblePriceRange();
       } catch (e) {
         console.log(e);
         return null;
       }
     },
-    updateOrderLine() {
-      return false;
+    getPaneBox() {
+      const root = this.$el;
+      const graphic = this.$refs.graphic;
+      if (!root || !graphic) return null;
+      const iframe = graphic.getElementsByTagName("iframe")[0];
+      if (!iframe) return null;
+      let pane = null;
+      try {
+        const doc = iframe.contentWindow && iframe.contentWindow.document;
+        if (doc) {
+          const panes = doc.querySelectorAll(".chart-markup-table.pane");
+          pane = panes[0] || null;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+      const rootRect = root.getBoundingClientRect();
+      const iframeRect = iframe.getBoundingClientRect();
+      if (pane) {
+        const paneRect = pane.getBoundingClientRect();
+        return {
+          top: iframeRect.top - rootRect.top + paneRect.top,
+          left: iframeRect.left - rootRect.left + paneRect.left,
+          width: paneRect.width,
+          height: paneRect.height,
+        };
+      }
+      return {
+        top: iframeRect.top - rootRect.top + 39,
+        left: iframeRect.left - rootRect.left,
+        width: Math.max(iframeRect.width - 72, 0),
+        height: Math.max(iframeRect.height - 39 - 28, 0),
+      };
     },
-    syncOrderLines() {
-      const chart = this.getChart();
-      if (!chart) return;
-      const next = {};
-      const seen = {};
-      this.pendingOrders.forEach((order) => {
-        const key = this.orderLineKey(order);
-        seen[key] = true;
-        const existing = this.orderLines[key];
-        const fingerprint = this.orderLineFingerprint(order);
-        if (existing && existing.fingerprint === fingerprint) {
-          next[key] = existing;
-          return;
-        }
-        if (existing && this.updateOrderLine(existing, order)) {
-          next[key] = existing;
-          return;
-        }
-        if (existing) this.removeLineEntry(existing);
-        const drawn = this.drawOrderLine(order);
-        if (drawn) next[key] = drawn;
-      });
-      Object.keys(this.orderLines).forEach((key) => {
-        if (!seen[key]) this.removeLineEntry(this.orderLines[key]);
-      });
-      this.orderLines = next;
+    updateOverlayMetrics() {
+      const range = this.getPriceRange();
+      const box = this.getPaneBox();
+      if (!range || !box || box.height < 8) {
+        this.overlayMetrics = null;
+        return;
+      }
+      this.overlayMetrics = {
+        top: box.top,
+        left: box.left,
+        width: box.width,
+        height: box.height,
+        priceFrom: range.from,
+        priceTo: range.to,
+      };
     },
     setGraphColor() {
       let graphTheme = {
@@ -898,3 +922,38 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.trade-graphic {
+  position: relative;
+  height: 100%;
+  min-height: inherit;
+}
+.trade-graphic .graphic {
+  height: 100%;
+  margin-top: 0;
+}
+.pending-order-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+}
+.pending-order-line {
+  position: absolute;
+  height: 0;
+  border-top: 1px dotted;
+  box-sizing: border-box;
+}
+.pending-order-line__label {
+  position: absolute;
+  right: 4px;
+  top: -15px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #07080c;
+}
+</style>
