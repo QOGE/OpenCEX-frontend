@@ -16,6 +16,14 @@ const PENDING_ORDERS_LIMIT = 200;
 const PENDING_ORDERS_DEBOUNCE_MS = 300;
 const PENDING_ORDERS_POLL_MS = 15000;
 
+function hasDrawablePrice(order) {
+  if (order == null || order.price == null || order.price === "") {
+    return false;
+  }
+  const price = Number(order.price);
+  return Number.isFinite(price) && price > 0;
+}
+
 export default {
   // eslint-disable-next-line vue/require-prop-types
   props: {
@@ -29,11 +37,13 @@ export default {
       tvWidget: null,
       datafeed: null,
       chartReady: false,
+      chartDataReady: false,
       pendingOrders: [],
       orderLines: {},
       pendingOrdersRequestId: 0,
       pendingOrdersTimer: null,
       pendingOrdersPoll: null,
+      chartDataReadyTimer: null,
     };
   },
   computed: {
@@ -50,13 +60,22 @@ export default {
       if (!this.baseCurrency || !this.quoteCurrency) return "";
       return `${this.baseCurrency}-${this.quoteCurrency}`;
     },
-    openOrdersSignature() {
+    pendingOrdersFromStore() {
       const lists = [
         ...(this.openOrdersByPair?.list || []),
         ...(this.orders?.list || []),
       ];
-      return lists
-        .filter((order) => !order.pair || order.pair === this.pairCode)
+      const byId = {};
+      lists.forEach((order) => {
+        if (!order || order.id == null) return;
+        if (order.pair && order.pair !== this.pairCode) return;
+        if (!hasDrawablePrice(order)) return;
+        byId[order.id] = order;
+      });
+      return Object.values(byId);
+    },
+    openOrdersSignature() {
+      return this.pendingOrdersFromStore
         .map(
           (order) =>
             `${order.id}:${order.price}:${order.quantity_left}:${order.state}`
@@ -136,6 +155,10 @@ export default {
       clearTimeout(this.pendingOrdersTimer);
       this.pendingOrdersTimer = null;
     }
+    if (this.chartDataReadyTimer) {
+      clearTimeout(this.chartDataReadyTimer);
+      this.chartDataReadyTimer = null;
+    }
     this.clearOrderLines(false);
     if (this.datafeed) this.datafeed.unsubscribeBars();
     if (this.tvWidget) {
@@ -147,6 +170,7 @@ export default {
       this.tvWidget = null;
     }
     this.chartReady = false;
+    this.chartDataReady = false;
   },
 
   methods: {
@@ -161,10 +185,16 @@ export default {
       }, 1000);
     },
     makeChart() {
+      if (!this.$refs.graphic) return;
       if (this.datafeed) {
         this.datafeed.unsubscribeBars();
       }
       this.chartReady = false;
+      this.chartDataReady = false;
+      if (this.chartDataReadyTimer) {
+        clearTimeout(this.chartDataReadyTimer);
+        this.chartDataReadyTimer = null;
+      }
       this.clearOrderLines(false);
       if (this.tvWidget) {
         try {
@@ -205,6 +235,14 @@ export default {
 
       tvWidget.onChartReady(() => {
         if (this.tvWidget !== tvWidget) return;
+        this.chartReady = true;
+        try {
+          tvWidget.applyOverrides({
+            "tradingProperties.showOrders": true,
+          });
+        } catch (e) {
+          console.log(e);
+        }
         try {
           tvWidget
             .chart()
@@ -214,8 +252,25 @@ export default {
             );
           // eslint-disable-next-line no-empty
         } catch (e) {}
-        this.chartReady = true;
-        this.loadPendingOrders();
+        const markDataReady = () => {
+          if (this.tvWidget !== tvWidget) return;
+          this.chartDataReady = true;
+          this.clearOrderLines(false);
+          this.loadPendingOrders();
+        };
+        try {
+          tvWidget.chart().onDataLoaded().subscribe(null, markDataReady, false);
+          if (tvWidget.chart().dataReady(markDataReady)) {
+            markDataReady();
+          }
+        } catch (e) {
+          console.log(e);
+          markDataReady();
+        }
+        this.chartDataReadyTimer = setTimeout(() => {
+          if (this.tvWidget !== tvWidget || this.chartDataReady) return;
+          markDataReady();
+        }, 2000);
       });
     },
     scheduleLoadPendingOrders() {
@@ -240,12 +295,17 @@ export default {
         this.pendingOrdersPoll = null;
       }
     },
-    hasDrawablePrice(order) {
-      if (order == null || order.price == null || order.price === "") {
-        return false;
-      }
-      const price = Number(order.price);
-      return Number.isFinite(price) && price > 0;
+    mergePendingOrders(fromApi) {
+      const byId = {};
+      this.pendingOrdersFromStore.forEach((order) => {
+        byId[order.id] = order;
+      });
+      (fromApi || []).forEach((order) => {
+        if (!hasDrawablePrice(order)) return;
+        if (order.pair && order.pair !== this.pairCode) return;
+        byId[order.id] = order;
+      });
+      return Object.values(byId);
     },
     async loadPendingOrders() {
       if (!this.isAuthorized || !this.pairCode) {
@@ -253,6 +313,8 @@ export default {
         this.syncOrderLines();
         return;
       }
+      this.pendingOrders = this.mergePendingOrders([]);
+      this.syncOrderLines();
       const requestId = ++this.pendingOrdersRequestId;
       const pair = this.pairCode;
       try {
@@ -268,23 +330,36 @@ export default {
           return;
         }
         const results = Array.isArray(body) ? body : body?.results || [];
-        this.pendingOrders = results.filter((order) =>
-          this.hasDrawablePrice(order)
-        );
+        this.pendingOrders = this.mergePendingOrders(results);
         this.syncOrderLines();
       } catch (e) {
         if (requestId !== this.pendingOrdersRequestId) return;
         console.log(e);
+        this.pendingOrders = this.mergePendingOrders([]);
+        this.syncOrderLines();
       }
     },
     getChart() {
-      if (!this.chartReady || !this.tvWidget) return null;
+      if (!this.chartReady || !this.chartDataReady || !this.tvWidget) {
+        return null;
+      }
       try {
         return this.tvWidget.chart();
       } catch (e) {
         console.log(e);
         return null;
       }
+    },
+    shapePoint(price) {
+      const chart = this.getChart();
+      let time;
+      try {
+        const range = chart && chart.getVisibleRange();
+        if (range && range.to) time = range.to;
+      } catch (e) {
+        console.log(e);
+      }
+      return time ? { time, price } : { price };
     },
     orderLineKey(order) {
       return String(order.id);
@@ -331,90 +406,39 @@ export default {
       const quantity = this.formatOrderQuantity(order);
       const text = isBuy ? "Buy" : "Sell";
       try {
-        const line = chart.createOrderLine();
-        line
-          .setPrice(price)
-          .setText(text)
-          .setTooltip(`${text} ${quantity} @ ${price}`)
-          .setQuantity(quantity)
-          .setLineStyle(DOTTED_LINE_STYLE)
-          .setLineWidth(1)
-          .setLineColor(color)
-          .setBodyTextColor("#ffffff")
-          .setBodyBackgroundColor(color)
-          .setBodyBorderColor(color)
-          .setQuantityBackgroundColor(color)
-          .setQuantityBorderColor(color)
-          .setQuantityTextColor("#ffffff")
-          .setCancelButtonBackgroundColor(color)
-          .setCancelButtonBorderColor(color)
-          .setCancelButtonIconColor("#ffffff")
-          .setExtendLeft(true)
-          .setLineLength(0)
-          .setEditable(false)
-          .setCancellable(false);
+        const id = chart.createShape(this.shapePoint(price), {
+          shape: "horizontal_line",
+          text: `${text} ${quantity}`,
+          lock: true,
+          disableSelection: true,
+          disableSave: true,
+          disableUndo: true,
+          showInObjectsTree: false,
+          overrides: {
+            linecolor: color,
+            linestyle: DOTTED_LINE_STYLE,
+            linewidth: 1,
+            showPrice: true,
+            showLabel: true,
+            textcolor: color,
+            fontsize: 11,
+            horzLabelsAlign: "right",
+            vertLabelsAlign: "bottom",
+          },
+        });
+        if (id == null) return null;
         return {
-          kind: "orderLine",
-          api: line,
+          kind: "shape",
+          api: id,
           fingerprint: this.orderLineFingerprint(order),
         };
       } catch (e) {
         console.log(e);
-        try {
-          const id = chart.createShape(
-            { price },
-            {
-              shape: "horizontal_line",
-              lock: true,
-              disableSelection: true,
-              disableSave: true,
-              disableUndo: true,
-              showInObjectsTree: false,
-              overrides: {
-                linecolor: color,
-                linestyle: DOTTED_LINE_STYLE,
-                linewidth: 1,
-                showPrice: false,
-                showLabel: false,
-              },
-            }
-          );
-          if (id == null) return null;
-          return {
-            kind: "shape",
-            api: id,
-            fingerprint: this.orderLineFingerprint(order),
-          };
-        } catch (err) {
-          console.log(err);
-          return null;
-        }
+        return null;
       }
     },
-    updateOrderLine(entry, order) {
-      if (!entry || entry.kind !== "orderLine" || !entry.api) return false;
-      try {
-        const price = Number(order.price);
-        const isBuy = order.operation === 0;
-        const color = isBuy ? BUY_LINE_COLOR : SELL_LINE_COLOR;
-        const quantity = this.formatOrderQuantity(order);
-        const text = isBuy ? "Buy" : "Sell";
-        entry.api
-          .setPrice(price)
-          .setText(text)
-          .setTooltip(`${text} ${quantity} @ ${price}`)
-          .setQuantity(quantity)
-          .setLineColor(color)
-          .setBodyBackgroundColor(color)
-          .setBodyBorderColor(color)
-          .setQuantityBackgroundColor(color)
-          .setQuantityBorderColor(color);
-        entry.fingerprint = this.orderLineFingerprint(order);
-        return true;
-      } catch (e) {
-        console.log(e);
-        return false;
-      }
+    updateOrderLine() {
+      return false;
     },
     syncOrderLines() {
       const chart = this.getChart();
