@@ -227,17 +227,29 @@ export default {
       return this.$store.getters["getCurrentBaseCurrency"];
     },
     filteredCoins() {
-      let res = Object.fromEntries(
-        Object.entries(this.coins).filter(([, coin]) => {
-          return coin.base && !coin.disable_pairs && !coin.disable_all;
-        })
-      );
-      return Object.keys(res).length > 0
-        ? res
-        : { [this.defaultPair.split("-")[1]]: [] };
+      const tabs = {};
+      const addTab = (ticker) => {
+        const coin = this.coins[ticker];
+        if (coin && !coin.disable_pairs && !coin.disable_all) {
+          tabs[ticker] = coin;
+        }
+      };
+
+      Object.entries(this.coins || {}).forEach(([ticker, coin]) => {
+        if (coin.base) addTab(ticker);
+        Object.values(coin.pairs || {}).forEach((pair) => {
+          if (pair.quote) addTab(pair.quote);
+        });
+      });
+
+      if (Object.keys(tabs).length > 0) return tabs;
+      const fallback = (this.defaultPair || "").split("-")[1];
+      return fallback && this.coins[fallback]
+        ? { [fallback]: this.coins[fallback] }
+        : {};
     },
     getPairsForTopCur() {
-      return this.coins[this.topCurrency].pairs;
+      return this.coins[this.topCurrency]?.pairs || {};
     },
     filteredPairs() {
       let res = Object.values(this.getPairsForTopCur).filter(({ base }) => {
