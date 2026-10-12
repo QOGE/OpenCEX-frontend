@@ -1371,14 +1371,13 @@ thead .sell-orders__td b {
 
 .orders-table .sell-label,
 .trades-table .sell-label {
-  background-color: rgb(255, 93, 85);
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  color: #ffffff;
-  font-weight: bold;
+  background: none;
+  border-radius: 0;
+  color: #f6363a;
+  font-weight: 700;
   font-family: "Open Sans", sans-serif;
-  display: inline-block;
-  padding: 5px 10px;
+  display: inline;
+  padding: 0;
   white-space: nowrap;
 }
 
@@ -1401,14 +1400,13 @@ thead .sell-orders__td b {
 
 .orders-table .buy-label,
 .trades-table .buy-label {
-  background-color: rgb(114, 187, 83);
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  color: #ffffff;
-  font-weight: bold;
+  background: none;
+  border-radius: 0;
+  color: #06c15e;
+  font-weight: 700;
   font-family: "Open Sans", sans-serif;
-  display: inline-block;
-  padding: 5px 10px;
+  display: inline;
+  padding: 0;
 }
 
 .footer {
@@ -4871,7 +4869,7 @@ iframe.wizard {
   .trades-table .buy-label,
   .orders-table .sell-label,
   .trades-table .sell-label {
-    padding: 5px !important;
+    padding: 0 !important;
   }
   .order-head .order-cell,
   .order-row .order-cell {

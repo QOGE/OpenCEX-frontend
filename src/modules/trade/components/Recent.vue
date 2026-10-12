@@ -55,7 +55,6 @@
                       'sell-label': trade.operation === 1,
                       'buy-label': trade.operation === 0,
                     }"
-                    style="width: 80px; text-align: center"
                     >{{ getOrderWord("type", trade.operation) }}</span
                   >
                 </div>
@@ -161,10 +160,10 @@ export default {
     getOrderWord(column, data) {
       if (column === "type") {
         if (data === 1) {
-          return this.$t("common.sell_big");
+          return this.$t("common.sell");
         }
         if (data === 0) {
-          return this.$t("common.buy_big");
+          return this.$t("common.buy");
         }
       }
       if (column === "state") {

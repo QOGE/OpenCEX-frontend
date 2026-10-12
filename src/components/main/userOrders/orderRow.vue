@@ -287,10 +287,10 @@ export default {
     getOrderWord(column, data) {
       if (column === "type") {
         if (data === 1) {
-          return this.$t("common.sell_big");
+          return this.$t("common.sell");
         }
         if (data === 0) {
-          return this.$t("common.buy_big");
+          return this.$t("common.buy");
         }
       }
       if (column === "state") {
