@@ -87,10 +87,13 @@
       v-if="!isAuthorized && currentOrdersTab !== 'recent'"
       class="wallet-list--tooltip-layer"
     ></div>
-    <div v-if="currentOrdersTab === 'recent'" class="user-orders-recent">
+    <div
+      v-if="currentOrdersTab === 'recent'"
+      class="user-orders-body user-orders-recent"
+    >
       <Recent embedded />
     </div>
-    <div v-else-if="showActivePairs">
+    <div v-else-if="showActivePairs" class="user-orders-body">
       <orders-table
         v-if="currentOrdersTab == 'open'"
         :orders="openOrdersByPair.list"
@@ -114,7 +117,7 @@
         @update-order="updateOrder"
       />
     </div>
-    <div v-else>
+    <div v-else class="user-orders-body">
       <orders-table
         v-if="currentOrdersTab == 'open'"
         :orders="orders.list"
@@ -386,11 +389,18 @@ export default {
   width: 100%;
 }
 
+.user-orders-body {
+  flex: 1;
+  min-height: 0;
+}
+
 .user-orders-recent {
   min-height: 180px;
+  display: flex;
+  flex-direction: column;
 }
 
 .user-orders-recent :deep(.ps) {
-  height: 240px;
+  height: 100%;
 }
 </style>

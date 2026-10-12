@@ -173,10 +173,12 @@ export default {
 <style lang="scss">
 .user-orders-table {
   overflow-x: auto;
-  height: 305px;
+  min-height: 240px;
+  height: 100%;
   .table-responsive {
     margin-bottom: 5px;
-    height: 270px;
+    min-height: 200px;
+    height: 100%;
   }
   .orders-table {
     width: 100%;

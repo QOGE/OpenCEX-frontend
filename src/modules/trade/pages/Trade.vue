@@ -135,13 +135,13 @@ export default {
           countPages: 1,
           currentPage: 1,
           offset: 0,
-          perPage: 7,
+          perPage: 25,
         },
         close_orders: {
           countPages: 1,
           currentPage: 1,
           offset: 0,
-          perPage: 7,
+          perPage: 25,
         },
       },
       savedPrecision: null,
@@ -178,7 +178,7 @@ export default {
       };
     },
     ordersLimit() {
-      return 7;
+      return 25;
     },
     isAuthorized() {
       return !!this.$store.getters["core/isAuthorized"];
@@ -723,7 +723,7 @@ export default {
   .trade-terminal {
     display: grid;
     grid-template-columns: 270px minmax(0, 1fr) 300px;
-    grid-template-rows: minmax(560px, 1fr) auto minmax(220px, 30vh);
+    grid-template-rows: minmax(480px, 1fr) auto minmax(360px, 42vh);
     grid-template-areas:
       "book chart side"
       "book form side"
@@ -768,12 +768,54 @@ export default {
   }
 
   .graphic-order-wrapper {
-    min-height: 560px;
+    min-height: 480px;
   }
 
   .trade-terminal__orders :deep(.user-orders) {
     height: 100%;
-    overflow: auto;
+    overflow: hidden;
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .trade-terminal__orders :deep(.user-orders-body) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .trade-terminal__orders :deep(.user-orders-table) {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .trade-terminal__orders :deep(.user-orders-table .orders-table) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .trade-terminal__orders :deep(.user-orders-table .table-responsive) {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .trade-terminal__orders :deep(.user-orders-recent .sell-orders) {
+    max-height: none;
+    margin-top: 0;
+  }
+  .trade-terminal__orders :deep(.user-orders-recent .trades),
+  .trade-terminal__orders :deep(.user-orders-recent .trades-table) {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .trade-terminal__orders :deep(.user-orders-recent .ps) {
+    height: 100%;
   }
 }
 
@@ -797,7 +839,7 @@ export default {
 
 @media (min-width: 1100px) {
   :deep(.graphic) {
-    min-height: 560px;
+    min-height: 480px;
   }
 }
 .wallet-list--tooltip-layer {

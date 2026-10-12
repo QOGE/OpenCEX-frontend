@@ -4737,7 +4737,8 @@ iframe.wizard {
 
 .user-orders-table .table-responsive {
   margin-bottom: 5px;
-  height: 270px;
+  min-height: 200px;
+  height: 100%;
 }
 
 .nav-tabs .nav-item.show .nav-link,
