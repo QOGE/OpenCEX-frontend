@@ -3,7 +3,7 @@
     <div class="sell-orders__top sell-orders__top--title">
       <div class="sell-orders__title">
         <span
-          class="cursor-pointer"
+          class="cursor-pointer user-orders-tab"
           :class="
             currentOrdersTab === 'open' ? 'ordersEnabled' : 'ordersDisabled'
           "
@@ -12,8 +12,7 @@
           {{ $t("common.activeorders") }}
         </span>
         <span
-          class="cursor-pointer"
-          style="margin-left: 5px"
+          class="cursor-pointer user-orders-tab"
           :class="
             currentOrdersTab === 'close' ? 'ordersEnabled' : 'ordersDisabled'
           "
@@ -22,8 +21,7 @@
           {{ $t("common.closedorders") }}
         </span>
         <span
-          class="cursor-pointer"
-          style="margin-left: 5px"
+          class="cursor-pointer user-orders-tab"
           :class="
             currentOrdersTab === 'recent' ? 'ordersEnabled' : 'ordersDisabled'
           "
@@ -316,6 +314,10 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.user-orders-tab + .user-orders-tab {
+  margin-left: 20px;
 }
 
 .input_checkbox {
