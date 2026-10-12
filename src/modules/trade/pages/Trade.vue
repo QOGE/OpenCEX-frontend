@@ -59,9 +59,6 @@
     <div class="trade-terminal__orders">
       <UserOrders @error="showErrorMessage" @pull-orders="getOrders" />
     </div>
-    <div class="trade-terminal__trades">
-      <Recent />
-    </div>
   </div>
 </template>
 
@@ -78,7 +75,6 @@ import SellOrders from "../components/orders/Orders.vue";
 import CurrencyList from "../components/CurrencyList.vue";
 import WalletList from "~/modules/wallet/components/WalletList.vue";
 import UserOrders from "~/components/main/userOrders/userOrders.vue";
-import Recent from "../components/Recent.vue";
 import TradeMenus from "../components/TradeMenus.vue";
 import TradeGraphic from "../components/TradeGraphic.vue";
 import InfoModal from "~/modules/wallet/components/modals/InfoModal.vue";
@@ -119,7 +115,6 @@ export default {
     CurrencyList,
     WalletList,
     UserOrders,
-    Recent,
     TradeMenus,
     TradeGraphic,
   },
@@ -701,8 +696,7 @@ export default {
 .trade-terminal__chart,
 .trade-terminal__side,
 .trade-terminal__form,
-.trade-terminal__orders,
-.trade-terminal__trades {
+.trade-terminal__orders {
   min-width: 0;
 }
 
@@ -733,7 +727,7 @@ export default {
     grid-template-areas:
       "book chart side"
       "book form side"
-      "orders orders trades";
+      "orders orders orders";
     gap: 8px;
     min-height: calc(100vh - 64px);
   }
@@ -761,10 +755,6 @@ export default {
     grid-area: orders;
     min-height: 0;
   }
-  .trade-terminal__trades {
-    grid-area: trades;
-    min-height: 0;
-  }
 
   .trade-terminal__side .currency-list {
     flex: 1.15;
@@ -781,8 +771,7 @@ export default {
     min-height: 560px;
   }
 
-  .trade-terminal__orders :deep(.user-orders),
-  .trade-terminal__trades :deep(.trades) {
+  .trade-terminal__orders :deep(.user-orders) {
     height: 100%;
     overflow: auto;
   }

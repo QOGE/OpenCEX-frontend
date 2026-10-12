@@ -1,6 +1,6 @@
 <template>
   <div class="trades">
-    <div class="sell-order recent-trades">
+    <div v-if="!embedded" class="sell-order recent-trades">
       <div
         class="sell-orders__top sell-orders__top--title recent-trades__title"
       >
@@ -9,7 +9,10 @@
         </div>
       </div>
     </div>
-    <div class="table-responsive sell-orders trades-table h-[313px]">
+    <div
+      class="table-responsive sell-orders trades-table"
+      :class="{ 'h-[313px]': !embedded }"
+    >
       <perfect-scrollbar v-if="tradesExist && isCurrentPairActive">
         <table class="table table-hover table-striped">
           <thead>
@@ -138,6 +141,12 @@ import getFixedDecimal from "~/mixins/getFixedDecimal";
 
 export default {
   name: "RecentPage",
+  props: {
+    embedded: {
+      type: Boolean,
+      default: false,
+    },
+  },
 
   mixins: [getCoolTrade, getFormattedDate, getFixedDecimal],
   computed: {

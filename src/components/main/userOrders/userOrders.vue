@@ -21,7 +21,17 @@
         >
           {{ $t("common.closedorders") }}
         </span>
-        <span class="sell-orders__pair">
+        <span
+          class="cursor-pointer"
+          style="margin-left: 5px"
+          :class="
+            currentOrdersTab === 'recent' ? 'ordersEnabled' : 'ordersDisabled'
+          "
+          @click="clickRecentTrades"
+        >
+          {{ $t("common.recenttrades") }}
+        </span>
+        <span v-if="currentOrdersTab !== 'recent'" class="sell-orders__pair">
           <label class="input_checkbox" style="margin-bottom: 14px">
             <input
               v-model="showActivePairs"
@@ -35,6 +45,7 @@
         </span>
       </div>
       <div
+        v-if="currentOrdersTab !== 'recent'"
         class="flex flex-col md:flex-row items-start md:items-center sell-orders__date-filter mt-3 md:mt-0"
       >
         <span class="whitespace-nowrap">
@@ -74,8 +85,14 @@
         </div>
       </div>
     </div>
-    <div v-if="!isAuthorized" class="wallet-list--tooltip-layer"></div>
-    <div v-if="showActivePairs">
+    <div
+      v-if="!isAuthorized && currentOrdersTab !== 'recent'"
+      class="wallet-list--tooltip-layer"
+    ></div>
+    <div v-if="currentOrdersTab === 'recent'" class="user-orders-recent">
+      <Recent embedded />
+    </div>
+    <div v-else-if="showActivePairs">
       <orders-table
         v-if="currentOrdersTab == 'open'"
         :orders="openOrdersByPair.list"
@@ -126,6 +143,7 @@
 
 <script>
 import OrdersTable from "./ordersTable.vue";
+import Recent from "~/modules/trade/components/Recent.vue";
 import UpdateOrderModal from "~/components/modals/UpdateOrderModal.vue";
 import { mapGetters } from "vuex";
 import DatePicker from "vue-datepicker-next";
@@ -135,6 +153,7 @@ export default {
   components: {
     DatePicker,
     OrdersTable,
+    Recent,
   },
   emits: ["error", "updateOrder", "deleteOrder", "pullOrders"],
   data() {
@@ -232,6 +251,9 @@ export default {
     clickClosedOrders() {
       this.showActiveOrders = false;
       this.currentOrdersTab = "close";
+    },
+    clickRecentTrades() {
+      this.currentOrdersTab = "recent";
     },
     checkActivePairFromLS() {
       this.showActivePairs = !!localStorage.getItem("active-pair-check");
@@ -360,5 +382,13 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
+}
+
+.user-orders-recent {
+  min-height: 180px;
+}
+
+.user-orders-recent :deep(.ps) {
+  height: 240px;
 }
 </style>
