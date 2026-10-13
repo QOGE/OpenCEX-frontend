@@ -1345,7 +1345,7 @@ thead .sell-orders__td b {
 .orders-table,
 .trades-table {
   margin-top: 0;
-  height: 305px;
+  height: auto;
 }
 
 .orders-table__td,
@@ -4737,8 +4737,7 @@ iframe.wizard {
 
 .user-orders-table .table-responsive {
   margin-bottom: 5px;
-  min-height: 200px;
-  height: 100%;
+  height: auto;
 }
 
 .nav-tabs .nav-item.show .nav-link,

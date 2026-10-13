@@ -299,7 +299,7 @@ export default {
 
 <style>
 .user-orders {
-  overflow: hidden;
+  overflow: visible;
   margin-top: 15px;
   -webkit-transition: all 0.3s linear;
   -o-transition: all 0.3s linear;
@@ -390,17 +390,22 @@ export default {
 }
 
 .user-orders-body {
-  flex: 1;
   min-height: 0;
 }
 
 .user-orders-recent {
   min-height: 180px;
-  display: flex;
-  flex-direction: column;
 }
 
+.user-orders-recent :deep(.sell-orders) {
+  max-height: none;
+  height: auto;
+  margin-top: 0;
+}
+
+.user-orders-recent :deep(.trades-table),
 .user-orders-recent :deep(.ps) {
-  height: 100%;
+  height: auto !important;
+  max-height: none;
 }
 </style>

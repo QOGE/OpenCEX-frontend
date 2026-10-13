@@ -723,7 +723,7 @@ export default {
   .trade-terminal {
     display: grid;
     grid-template-columns: 270px minmax(0, 1fr) 300px;
-    grid-template-rows: minmax(480px, 1fr) auto minmax(360px, 42vh);
+    grid-template-rows: minmax(420px, 1fr) auto minmax(280px, auto);
     grid-template-areas:
       "book chart side"
       "book form side"
@@ -771,51 +771,25 @@ export default {
     min-height: 480px;
   }
 
-  .trade-terminal__orders :deep(.user-orders) {
-    height: 100%;
-    overflow: hidden;
+  .trade-terminal__orders :deep(.user-orders),
+  .trade-terminal__orders :deep(.trades) {
+    height: auto;
+    overflow: visible !important;
     margin-top: 0;
-    display: flex;
-    flex-direction: column;
   }
-  .trade-terminal__orders :deep(.user-orders-body) {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .trade-terminal__orders :deep(.user-orders-table) {
-    flex: 1;
-    min-height: 0;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-  }
-  .trade-terminal__orders :deep(.user-orders-table .orders-table) {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  .trade-terminal__orders :deep(.user-orders-table .table-responsive) {
-    flex: 1;
-    min-height: 0;
-    height: auto;
+  .trade-terminal__orders :deep(.user-orders-table),
+  .trade-terminal__orders :deep(.user-orders-table .orders-table),
+  .trade-terminal__orders :deep(.user-orders-table .table-responsive),
+  .trade-terminal__orders :deep(.user-orders-table .ps),
+  .trade-terminal__orders :deep(.user-orders-recent .sell-orders),
+  .trade-terminal__orders :deep(.user-orders-recent .trades),
+  .trade-terminal__orders :deep(.user-orders-recent .trades-table),
+  .trade-terminal__orders :deep(.user-orders-recent .ps) {
+    height: auto !important;
+    max-height: none;
   }
   .trade-terminal__orders :deep(.user-orders-recent .sell-orders) {
-    max-height: none;
     margin-top: 0;
-  }
-  .trade-terminal__orders :deep(.user-orders-recent .trades),
-  .trade-terminal__orders :deep(.user-orders-recent .trades-table) {
-    flex: 1;
-    min-height: 0;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-  }
-  .trade-terminal__orders :deep(.user-orders-recent .ps) {
-    height: 100%;
   }
 }
 

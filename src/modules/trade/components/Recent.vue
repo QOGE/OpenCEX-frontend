@@ -13,83 +13,82 @@
       class="table-responsive sell-orders trades-table"
       :class="{ 'h-[313px]': !embedded }"
     >
-      <perfect-scrollbar v-if="tradesExist && isCurrentPairActive">
-        <table class="table table-hover table-striped">
-          <thead>
-            <tr>
-              <td>
-                <div class="sell-orders__td">
-                  <b>{{ $t("common.date") }}</b>
-                </div>
-              </td>
-              <td>
-                <div class="sell-orders__td">
-                  <b>{{ $t("common.operation") }}</b>
-                </div>
-              </td>
-              <td>
-                <div class="sell-orders__td">
-                  <b>{{ $t("common.price") }} {{ currentBaseCurrency }}</b>
-                </div>
-              </td>
-              <td>
-                <div class="sell-orders__td">
-                  <b>{{ currentBaseCurrency }}</b>
-                </div>
-              </td>
-              <td>
-                <div class="sell-orders__td">
-                  <b>{{ currentQuoteCurrency }}</b>
-                </div>
-              </td>
-            </tr>
-          </thead>
-          <tbody class="recent-trades-table">
-            <tr v-for="trade in recenttrades" :key="trade.id">
-              <td>
-                <div class="orders-table__td">
-                  {{ getFormattedDate(trade.updated) }}
-                </div>
-              </td>
-              <td>
-                <div class="orders-table__td">
-                  <span
-                    :class="{
-                      'sell-label': trade.operation === 1,
-                      'buy-label': trade.operation === 0,
-                    }"
-                    >{{ getOrderWord("type", trade.operation) }}</span
-                  >
-                </div>
-              </td>
-              <td>
-                <div class="orders-table__td">
-                  {{
-                    addSpace(getCoolTrade(trade.price, currentQuoteCurrency))
-                  }}
-                </div>
-              </td>
-              <td>
-                <div class="orders-table__td">
-                  {{ addSpace(getCoolTrade(trade.quantity)) }}
-                </div>
-              </td>
-              <td>
-                <div class="orders-table__td">
-                  {{
-                    addSpace(
-                      getCoolTrade(
-                        trade.quantity * trade.price,
-                        currentQuoteCurrency
-                      )
+      <table
+        v-if="tradesExist && isCurrentPairActive"
+        class="table table-hover table-striped"
+      >
+        <thead>
+          <tr>
+            <td>
+              <div class="sell-orders__td">
+                <b>{{ $t("common.date") }}</b>
+              </div>
+            </td>
+            <td>
+              <div class="sell-orders__td">
+                <b>{{ $t("common.operation") }}</b>
+              </div>
+            </td>
+            <td>
+              <div class="sell-orders__td">
+                <b>{{ $t("common.price") }} {{ currentBaseCurrency }}</b>
+              </div>
+            </td>
+            <td>
+              <div class="sell-orders__td">
+                <b>{{ currentBaseCurrency }}</b>
+              </div>
+            </td>
+            <td>
+              <div class="sell-orders__td">
+                <b>{{ currentQuoteCurrency }}</b>
+              </div>
+            </td>
+          </tr>
+        </thead>
+        <tbody class="recent-trades-table">
+          <tr v-for="trade in recenttrades" :key="trade.id">
+            <td>
+              <div class="orders-table__td">
+                {{ getFormattedDate(trade.updated) }}
+              </div>
+            </td>
+            <td>
+              <div class="orders-table__td">
+                <span
+                  :class="{
+                    'sell-label': trade.operation === 1,
+                    'buy-label': trade.operation === 0,
+                  }"
+                  >{{ getOrderWord("type", trade.operation) }}</span
+                >
+              </div>
+            </td>
+            <td>
+              <div class="orders-table__td">
+                {{ addSpace(getCoolTrade(trade.price, currentQuoteCurrency)) }}
+              </div>
+            </td>
+            <td>
+              <div class="orders-table__td">
+                {{ addSpace(getCoolTrade(trade.quantity)) }}
+              </div>
+            </td>
+            <td>
+              <div class="orders-table__td">
+                {{
+                  addSpace(
+                    getCoolTrade(
+                      trade.quantity * trade.price,
+                      currentQuoteCurrency
                     )
-                  }}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </perfect-scrollbar>
+                  )
+                }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <div v-else class="not-information !pt-[70px]">
         <div class="icon smile">
           <svg
@@ -192,6 +191,7 @@ export default {
 </script>
 <style scoped>
 .ps {
-  height: 330px;
+  height: auto;
+  max-height: none;
 }
 </style>

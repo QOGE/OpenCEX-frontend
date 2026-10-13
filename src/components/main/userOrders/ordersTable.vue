@@ -2,47 +2,45 @@
   <div class="user-orders-table">
     <div v-if="orders && orders.length" class="orders-table">
       <div class="table-responsive">
-        <perfect-scrollbar>
-          <table class="table table-hover table-striped">
-            <thead>
-              <tr class="order-head">
-                <td class="order-cell">{{ $t("common.date") }}</td>
-                <td v-if="!isActivePair" class="order-cell">
-                  {{ $t("common.pair") }}
-                </td>
-                <td class="order-cell">{{ $t("common.operation") }}</td>
-                <td class="order-cell">{{ $t("common.price") }}</td>
-                <td v-if="orderType === 'open'" class="order-cell">
-                  {{ $t("common.amountoriginal") }}
-                </td>
-                <td v-if="orderType === 'close'" class="order-cell">
-                  {{ $t("common.amountTableHeader") }}
-                </td>
-                <td v-if="orderType === 'open'" class="order-cell">
-                  {{ $t("common.amountleft") }}
-                </td>
-                <td class="order-cell">{{ $t("common.sum") }}</td>
-                <td v-if="orderType === 'close'" class="order-cell">
-                  {{ $t("common.status") }}
-                </td>
-                <td v-if="orderType === 'open'" class="order-cell"></td>
-              </tr>
-            </thead>
-            <tbody>
-              <order-row
-                v-for="(order, index) in orders"
-                :key="index"
-                :order="order"
-                :type="orderType"
-                :is-active-pair="isActivePair"
-                @update-order="updateOrder"
-                @delete-order="deleteOrder"
-              />
-            </tbody>
-          </table>
-        </perfect-scrollbar>
+        <table class="table table-hover table-striped">
+          <thead>
+            <tr class="order-head">
+              <td class="order-cell">{{ $t("common.date") }}</td>
+              <td v-if="!isActivePair" class="order-cell">
+                {{ $t("common.pair") }}
+              </td>
+              <td class="order-cell">{{ $t("common.operation") }}</td>
+              <td class="order-cell">{{ $t("common.price") }}</td>
+              <td v-if="orderType === 'open'" class="order-cell">
+                {{ $t("common.amountoriginal") }}
+              </td>
+              <td v-if="orderType === 'close'" class="order-cell">
+                {{ $t("common.amountTableHeader") }}
+              </td>
+              <td v-if="orderType === 'open'" class="order-cell">
+                {{ $t("common.amountleft") }}
+              </td>
+              <td class="order-cell">{{ $t("common.sum") }}</td>
+              <td v-if="orderType === 'close'" class="order-cell">
+                {{ $t("common.status") }}
+              </td>
+              <td v-if="orderType === 'open'" class="order-cell"></td>
+            </tr>
+          </thead>
+          <tbody>
+            <order-row
+              v-for="(order, index) in orders"
+              :key="index"
+              :order="order"
+              :type="orderType"
+              :is-active-pair="isActivePair"
+              @update-order="updateOrder"
+              @delete-order="deleteOrder"
+            />
+          </tbody>
+        </table>
       </div>
-      <div v-if="totalPages > 1">
+      <div v-if="totalPages > 1" class="user-orders-pagination">
         <paginate
           v-model="page"
           :page-range="5"
@@ -172,16 +170,20 @@ export default {
 
 <style lang="scss">
 .user-orders-table {
-  overflow-x: auto;
-  min-height: 240px;
-  height: 100%;
+  overflow: visible;
+  height: auto;
   .table-responsive {
     margin-bottom: 5px;
-    min-height: 200px;
-    height: 100%;
+    height: auto;
+    overflow-x: auto;
   }
   .orders-table {
     width: 100%;
+    height: auto;
+  }
+  .user-orders-pagination {
+    flex-shrink: 0;
+    padding: 8px 12px 12px;
   }
   .order-head {
     font-size: 12px;
