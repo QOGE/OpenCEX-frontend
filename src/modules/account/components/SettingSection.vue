@@ -743,8 +743,7 @@ export default {
               response.body["Status"]
             ) {
               this.errtextPreCheck = "";
-              this.googleCodeToPreCheck = "";
-              this.set2fa();
+              this.set2fa(this.googleCodeToPreCheck);
             } else {
               this.errtextPreCheck = this.$t("common.invalid_code");
             }
@@ -806,15 +805,17 @@ export default {
       }
     },
 
-    set2fa() {
+    set2fa(code) {
       this.$http
         .post("set2fa/", {
           secretcode: this.secretkey,
+          code: code,
         })
         .then(() => {
           this.is2faOff = false;
           this.twofaStepNumber = 1;
           this.errtextPreCheck = "";
+          this.googleCodeToPreCheck = "";
           setTimeout(() => {
             this.$notify({
               type: "success",
@@ -826,6 +827,9 @@ export default {
                 `,
             });
           }, 1000);
+        })
+        .catch(() => {
+          this.errtextPreCheck = this.$t("common.invalid_code");
         });
     },
 
