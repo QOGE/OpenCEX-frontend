@@ -36,7 +36,6 @@ export default (app) => {
     "/check_invite/",
     "/pairs_volume/",
     "/withdrawal/confirm-withdrawal-request",
-    "/withdrawal/cancel-withdrawal-request",
     "/check_captcha/",
     "/auth/password/reset/confirm/",
   ].map((uri) => config.api.baseURL + uri);
