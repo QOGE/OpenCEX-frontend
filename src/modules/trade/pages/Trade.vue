@@ -66,6 +66,7 @@
 import { mapGetters } from "vuex";
 import { Init } from "~/utilities/manager";
 import { DEFAULT_TRADE_PAIR } from "~/utilities/consts";
+import { attachWsAuth, hasSession, wsHelloMessage } from "~/utilities/session";
 import getFormattedDate from "~/mixins/getFormattedDate";
 import getFixedDecimal from "~/mixins/getFixedDecimal";
 import mainPageDataMocks from "~/mixins/mainPageDataInitMocks";
@@ -257,12 +258,10 @@ export default {
     },
     isConnectedSocket(isConected) {
       if (isConected) {
-        if (localStorage.getItem("token")) {
+        if (hasSession()) {
           this.$store.dispatch(
             "sendWSMessage",
-            JSON.stringify({
-              token: localStorage.getItem("token"),
-            })
+            JSON.stringify(wsHelloMessage())
           );
         }
         this.getTradesHistory();
@@ -329,13 +328,13 @@ export default {
 
     if (this.isAuthorized) {
       setInterval(() => {
-        if (!localStorage.getItem("token")) {
+        if (!hasSession()) {
           location.reload();
         }
       }, 10000);
     }
     if (this.isConnectedSocket) {
-      if (localStorage.getItem("token")) {
+      if (hasSession()) {
         this.sendToken();
       }
 
@@ -524,7 +523,7 @@ export default {
         wsMessage.params = msgParams;
       }
       if (needToken) {
-        wsMessage.token = localStorage.getItem("token") || null;
+        attachWsAuth(wsMessage);
       }
       if (needPair) {
         wsMessage.params.pair_name = `${this.currentPair[0]}-${this.currentPair[1]}`;

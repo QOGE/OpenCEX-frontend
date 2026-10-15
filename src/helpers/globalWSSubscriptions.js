@@ -1,4 +1,5 @@
 import { mapGetters, mapActions } from "vuex";
+import { hasSession, wsHelloMessage } from "~/utilities/session";
 
 const subscriptionConfig = [],
   onMessage = function (message) {
@@ -25,14 +26,7 @@ export default {
 
     globalWsSubscribe() {
       if (this.globalWSIsConnectedSocket) {
-        if (localStorage.getItem("token"))
-          this.sendWSMessage(
-            JSON.stringify({
-              command: "",
-              params: {},
-              token: localStorage.getItem("token"),
-            })
-          );
+        if (hasSession()) this.sendWSMessage(JSON.stringify(wsHelloMessage()));
         subscriptionConfig.forEach((subscription) => {
           if (
             (this.globalWSUserIsAuthenticated ||

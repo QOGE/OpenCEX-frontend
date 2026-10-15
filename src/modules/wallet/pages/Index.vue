@@ -249,6 +249,7 @@
 <script>
 import { mapGetters } from "vuex";
 import { floor10 } from "~/utilities/helpers";
+import { attachWsAuth, hasSession, wsHelloMessage } from "~/utilities/session";
 import copyToBuffer from "~/mixins/copyToBuffer";
 import getFixedDecimal from "~/mixins/getFixedDecimal";
 import wallet from "~/mixins/wallet";
@@ -389,10 +390,10 @@ export default {
     },
     isConnectedSocket(isConnected) {
       if (isConnected) {
-        if (localStorage.getItem("token")) {
+        if (hasSession()) {
           this.$store.dispatch(
             "sendWSMessage",
-            JSON.stringify({ token: localStorage.getItem("token") })
+            JSON.stringify(wsHelloMessage())
           );
         }
       }
@@ -439,10 +440,10 @@ export default {
       this.showSecurityNotice();
       this.$store.dispatch("core/getUserNotifications");
       if (this.isConnectedSocket) {
-        if (localStorage.getItem("token")) {
+        if (hasSession()) {
           this.$store.dispatch(
             "sendWSMessage",
-            JSON.stringify({ token: localStorage.getItem("token") })
+            JSON.stringify(wsHelloMessage())
           );
         }
         if (this.wsUserIsAuthenticated) {
@@ -553,7 +554,7 @@ export default {
         wsMessage.params = msgParams;
       }
       if (needToken) {
-        wsMessage.token = localStorage.getItem("token") || null;
+        attachWsAuth(wsMessage);
       }
       if (needPair) {
         wsMessage.params.pair_name = `${this.currentPair[0]}-${this.currentPair[1]}`;

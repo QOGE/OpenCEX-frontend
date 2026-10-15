@@ -2,6 +2,7 @@ import { app } from "../main";
 import errorManager from "~/helpers/errorHundle";
 import InfoModal from "~/components/modals/InfoModal.vue";
 import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
+import { persistSessionFromLogin } from "~/utilities/session";
 
 export default {
   data() {
@@ -81,10 +82,8 @@ export default {
       }
       app.config.globalProperties.$http
         .post("auth/login/", data)
-        .then((response) => {
-          localStorage.setItem("token", response.data.access_token);
-          localStorage.setItem("refresh_token", response.data.refresh_token);
-          localStorage.removeItem("show_security_notice");
+        .then(() => {
+          persistSessionFromLogin();
           this.$store.dispatch("core/loginSuccess");
           this.checkProfile();
         })
@@ -145,10 +144,8 @@ export default {
         this.isLoading = true;
         app.config.globalProperties.$http
           .post("auth/login/", config)
-          .then((response) => {
-            localStorage.setItem("token", response.data.access_token);
-            localStorage.setItem("refresh_token", response.data.refresh_token);
-            localStorage.removeItem("show_security_notice");
+          .then(() => {
+            persistSessionFromLogin();
             this.$store.dispatch("core/loginSuccess");
             this.checkProfile();
           })

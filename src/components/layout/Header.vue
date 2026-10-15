@@ -251,6 +251,7 @@ import handleLogout from "~/mixins/handleLogout";
 import getFixedDecimal from "~/mixins/getFixedDecimal";
 import LanguageSelector from "~/components/layout/parts/LanguageSelector.vue";
 import { useCookies } from "vue3-cookies";
+import { hasSession } from "~/utilities/session";
 
 export default {
   name: "HeaderComponent",
@@ -317,7 +318,7 @@ export default {
     },
   },
   mounted() {
-    if (localStorage.getItem("token")) {
+    if (hasSession()) {
       this.$store.dispatch("core/getProfile");
     }
   },

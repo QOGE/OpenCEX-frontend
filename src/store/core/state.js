@@ -1,7 +1,9 @@
+import { hasSession } from "~/utilities/session";
+
 export default () => ({
   locale: "",
   theme: "",
-  isLoggedIn: !!localStorage.getItem("token") || null,
+  isLoggedIn: hasSession() || null,
   userEmail: null,
   headerAccountData: null,
   isKYC: false,

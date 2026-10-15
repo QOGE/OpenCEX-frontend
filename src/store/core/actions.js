@@ -18,6 +18,11 @@ import { OrderInfo } from "~/api/order_info";
 import { WalletHistory } from "~/api/wallethistory";
 import { PaymentInfo } from "~/api/payment_info";
 import { Profile } from "~/api/profile";
+import {
+  clearSession,
+  getLegacyAccessToken,
+  getLegacyRefreshToken,
+} from "~/utilities/session";
 import { PaymentList } from "~/api/payment_list";
 import { Notifications } from "~/api/notifications";
 
@@ -402,34 +407,37 @@ export default {
     });
   },
   logout({ commit }) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("email");
-    localStorage.removeItem("refresh_token");
+    clearSession();
+    app.config.globalProperties.$http.post("auth/logout/").catch(() => {});
     commit(mutationTypes.LOGOUT);
   },
   refreshToken({ dispatch }) {
     if (!refreshTokenPromise)
       refreshTokenPromise = (async function () {
-        if (
-          localStorage.getItem("refresh_token") &&
-          localStorage.getItem("refresh_token") !== "undefined"
-        ) {
-          await app.config.globalProperties.$http
-            .post("auth/token/refresh/", {
-              refresh: localStorage.getItem("refresh_token") ?? "",
-            })
-            .then((response) => {
-              localStorage.setItem("token", response.data.access);
-              localStorage.setItem("refresh_token", response.data.refresh);
-            })
-            .catch((e) => {
-              dispatch("logout");
-              return Promise.reject(e);
-            })
-            .finally(() => {
-              refreshTokenPromise = null;
-            });
+        const body = {};
+        const legacyRefresh = getLegacyRefreshToken();
+        if (legacyRefresh) {
+          body.refresh = legacyRefresh;
         }
+        await app.config.globalProperties.$http
+          .post("auth/token/refresh/", body)
+          .then((response) => {
+            if (getLegacyAccessToken() || getLegacyRefreshToken()) {
+              if (response.data.access) {
+                localStorage.setItem("token", response.data.access);
+              }
+              if (response.data.refresh) {
+                localStorage.setItem("refresh_token", response.data.refresh);
+              }
+            }
+          })
+          .catch((e) => {
+            dispatch("logout");
+            return Promise.reject(e);
+          })
+          .finally(() => {
+            refreshTokenPromise = null;
+          });
       })();
 
     return refreshTokenPromise;

@@ -230,6 +230,7 @@ import { VueRecaptcha } from "vue-recaptcha";
 import ModalPagesHeader from "~/components/layout/ModalPagesHeader.vue";
 import loginMixin from "~/mixins/login";
 import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
+import { hasSession } from "~/utilities/session";
 
 export default {
   name: "LoginPage",
@@ -261,7 +262,7 @@ export default {
     },
   },
   beforeCreate() {
-    if (localStorage.getItem("token")) {
+    if (hasSession()) {
       window.location.replace(`/account${DEFAULT_TRADE_PATH}`);
     }
     localStorage.setItem("showDepositNoticeModal", "1");

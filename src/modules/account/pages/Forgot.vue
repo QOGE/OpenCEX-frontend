@@ -116,6 +116,7 @@
 import ModalPagesHeader from "~/components/layout/ModalPagesHeader.vue";
 import { VueRecaptcha } from "vue-recaptcha";
 import { DEFAULT_TRADE_PATH } from "~/utilities/consts";
+import { hasSession } from "~/utilities/session";
 
 export default {
   name: "ForgotPassword",
@@ -148,7 +149,7 @@ export default {
     };
   },
   beforeCreate: function () {
-    if (localStorage.getItem("token")) {
+    if (hasSession()) {
       window.location.replace(`/account${DEFAULT_TRADE_PATH}`);
     }
   },

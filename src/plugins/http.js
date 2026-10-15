@@ -2,10 +2,12 @@ import axios from "axios";
 import config from "~/local_config";
 import store from "~/store";
 import jwt_decode from "jwt-decode";
+import { getLegacyAccessToken, hasSession } from "~/utilities/session";
 
 export default (app) => {
   app.config.globalProperties.$http = axios.create({
     baseURL: config.api.baseURL,
+    withCredentials: true,
   });
 
   const router = app.config.globalProperties.$router;
@@ -42,28 +44,28 @@ export default (app) => {
 
   app.config.globalProperties.$http.interceptors.request.use(
     async function (config) {
+      config.withCredentials = true;
       config.headers["X-API-LANG"] = localStorage.getItem("planguage") || "en";
-      let token = localStorage.getItem("token");
-      try {
-        let payload = jwt_decode(token);
-        let expTime = payload.exp * 1000;
-        let curTime = new Date().getTime();
-        if (expTime - curTime <= 3000) {
+      let token = getLegacyAccessToken();
+      if (token) {
+        try {
+          let payload = jwt_decode(token);
+          let expTime = payload.exp * 1000;
+          let curTime = new Date().getTime();
+          if (expTime - curTime <= 3000) {
+            if (config.url !== "auth/token/refresh/") {
+              await store.dispatch("core/refreshToken");
+            }
+          }
+        } catch (err) {
           if (config.url !== "auth/token/refresh/") {
             await store.dispatch("core/refreshToken");
           }
         }
-      } catch (err) {
-        if (config.url !== "auth/token/refresh/") {
-          await store.dispatch("core/refreshToken");
+        token = getLegacyAccessToken();
+        if (!noAuthRequireApis.includes(config.url) && token) {
+          config.headers["Authorization"] = "Bearer " + token;
         }
-      }
-      if (
-        !noAuthRequireApis.includes(config.url) &&
-        localStorage.getItem("token")
-      ) {
-        config.headers["Authorization"] =
-          "Bearer " + localStorage.getItem("token");
       }
       return config;
     },
@@ -77,20 +79,23 @@ export default (app) => {
       return transformResponse(response);
     },
     async function (error) {
-      if (
-        error.response?.status === 401 &&
-        !noAuthRequireApis.includes(error.response.config.url) &&
-        error.response.config.url !== "auth/token/refresh/"
-      ) {
-        if (
-          error.response &&
-          error.response?.data?.code?.code === "token_not_valid"
-        ) {
-          const originalRequest = error.config;
+      const failedUrl = error.response?.config?.url || "";
+      const skipRefresh =
+        failedUrl.includes("auth/token/refresh/") ||
+        failedUrl.includes("auth/logout/") ||
+        noAuthRequireApis.includes(failedUrl);
+      if (error.response?.status === 401 && !skipRefresh && hasSession()) {
+        const originalRequest = error.config || {};
+        if (!originalRequest._retried) {
+          originalRequest._retried = true;
           try {
             await store.dispatch("core/refreshToken");
-            originalRequest.headers["Authorization"] =
-              "Bearer " + localStorage.getItem("token");
+            const refreshed = getLegacyAccessToken();
+            if (refreshed) {
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers["Authorization"] = "Bearer " + refreshed;
+            }
+            originalRequest.withCredentials = true;
             return app.config.globalProperties.$http(originalRequest);
           } catch (e) {
             console.log(e);
@@ -102,15 +107,10 @@ export default (app) => {
         );
         if (pathname !== "/" && !matchNotAuthViews) {
           const lastPage = router.currentRoute.value.fullPath;
-          if (
-            error.response &&
-            error.response?.data?.code?.code === "token_not_valid"
-          ) {
-            if (lastPage) {
-              router.push({ name: "login", query: { redirectFrom: lastPage } });
-            } else {
-              router.push({ name: "login" });
-            }
+          if (lastPage) {
+            router.push({ name: "login", query: { redirectFrom: lastPage } });
+          } else {
+            router.push({ name: "login" });
           }
         }
       }
@@ -137,4 +137,5 @@ export default (app) => {
 
 export const http = axios.create({
   baseURL: config.api.baseURL,
+  withCredentials: true,
 });
